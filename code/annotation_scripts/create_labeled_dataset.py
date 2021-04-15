@@ -6,6 +6,11 @@ import numpy as np
 from functools import reduce
 from collections import Counter
 
+""" 
+Convert consensus annotations (for evaluation sets) from Potato to format labeled dataset
+I combined annotations with tweet text and author ideology labels here but that can be removed
+"""
+
 #split is either train dev or test
 def load_annotated_text(annotated_data_path,start_year,end_year,countries,split):
 	years = [str(y) for y in range(start_year,end_year+1)]
@@ -66,24 +71,13 @@ def load_annotations(annotation_output,frame_types):
 			annotations.append(entry)
 	return pd.DataFrame(annotations)
 
+
+# Manually resolved some missing entries due to missing data (accidentally skipped them in Potato)
 def fill_incomplete_annotation(text_df,annotations):
 
 	set1 = set(text_df['id_str'].astype(str))
 	set2 = set(annotations['id_str'].astype(str))
 	incompleted_ids = set1 - set2
-	print(incompleted_ids)
-	#######
-	# Incompleted ids {'1079396885163520000', '1000453898560294912'}
-	#'1079396885163520000': 
-		#Morality and Ethics,  'Security and Defense', Economic, Policy Prescription and Evaluation
-		#Victim: Humanitarian'
-		#Thematic
-	#1000453898560294912
-		#'Morality and Ethics', 'Security and Defense', 'Public Sentiment']
-		#'Victim: Humanitarian'
-		#Episodic, Thematic
-	# This part is hard-coded annotations that didn't go through potato
-	###
 	
 	new_entry_1 = {'id_str': '1079396885163520000',
 				'all_frames': ['Morality and Ethics',  'Security and Defense', 'Economic', 'Policy Prescription and Evaluation','Victim: Humanitarian','Thematic'],
@@ -111,21 +105,20 @@ def combine_labels_metadata(text_df,ideology_df,annotations_df):
 def main():
 	#annotation_order_file = "/home/juliame/potato/annotation_output_train/Julia_Mendelsohn/annotation_order.txt"
 	annotation_output = "/home/juliame/framing/labeled_data/eval_annots.jsonl"
+
+	# Path where dev/test splits (by tweet id) are located without annotations
 	annotated_data_path = "/home/juliame/potato/data/07-23-20/by_year_country"
+
 	ideology_file = "/shared/2/projects/framing/data/tweet-ideology-07-16.json"
-	ideology_path_lib_con = "/shared/2/projects/framing/data/us_tweets_by_ideology_07-16"
 	out_path = '/home/juliame/framing/labeled_data/dataset_11-03-20'
 
-	start_year = 2018
-	end_year = 2019
-	countries = ['EU','US','GB']
-
+	
 	annotations_df = load_annotations(annotation_output,['Issue-General','Issue-Specific','Narrative'])
 	ideology_df = load_ideology_for_annotated_text(ideology_file,list(annotations_df['id_str']))
 
 
 	for split in ['dev','test']:
-		text_df = load_annotated_text(annotated_data_path,start_year,end_year,countries,split)
+		text_df = load_annotated_text(annotated_data_path,2018,2019,['EU','US','GB'],split)
 		dataset = combine_labels_metadata(text_df,ideology_df,annotations_df)
 		out_file = os.path.join(out_path,split + '.tsv')
 		dataset.to_csv(out_file,sep='\t')

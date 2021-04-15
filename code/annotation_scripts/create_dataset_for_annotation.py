@@ -6,6 +6,11 @@ import pandas as pd
 import glob
 import json
 
+"""
+Sample tweets for human annotation (80% train, 10% dev, 10% test)
+Each split contained equal numbers of tweets from all regions (EU, US, GB) and years (2018,2019)
+"""
+
 def get_already_annotated(annotated_path):
 	files = [os.path.join(annotated_path,x) for x in os.listdir(annotated_path)]
 	annotated_ids = []

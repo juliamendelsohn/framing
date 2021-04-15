@@ -8,13 +8,14 @@ import nltk
 from nltk.metrics import masi_distance, agreement
 from functools import reduce
 
+""" 
+Final calculations of interannotator agreement for annotations of frames in evaluation set
 
+"""
 
 def load_annotated_text(annotated_data_file):
 	df = pd.read_json(annotated_data_file,lines=True,dtype=str)
 	return df
-
-
 
 def load_annotations(annotation_output,frame_types):
 	annotations = []
@@ -50,6 +51,8 @@ def combine_multiple_coders(annotation_output_path,coders):
 	new_df.columns = ['id_str','frame_type'] + [f'labels-{coder}' for coder in coders]
 	return new_df
 
+
+# Special format for agreement calculation
 def format_labels(combined_df,coders,frame_type):
 	df = combined_df[combined_df['frame_type']==frame_type].dropna()
 	all_labels = []
@@ -65,7 +68,8 @@ def format_labels(combined_df,coders,frame_type):
 	return all_labels
 
 
-# #distance metric is either masi_distance or binary
+# Calculate overall agreement between coders for each frame type
+# Distance metric is either masi_distance or binary
 def overall_agreement(combined_df,coders,frame_types,distance_metric=masi_distance):
 	results = []
 	for frame_type in frame_types:
@@ -77,6 +81,7 @@ def overall_agreement(combined_df,coders,frame_types,distance_metric=masi_distan
 	return agree_df
 
 
+# How did each coder's individual annotations compare with the consensus labels?
 def compare_with_consensus(coder,consensus_file,frame_types,annotation_output_path_base):
 	consensus_annots = load_annotations(consensus_file,frame_types)
 	consensus_df = pd.melt(consensus_annots,id_vars='id_str')
@@ -104,6 +109,8 @@ def main():
 
 	annotation_output_path_base = '/home/juliame/framing/labeled_data/annotations_by_pair'
 	consensus_file = '/home/juliame/framing/labeled_data/eval_annots.jsonl'
+
+	# Comparing agreement between all annotator pairs (first author and each of the other annotators)
 	coder_pairs = [(c,'julia') for c in ['ceren','david','anoop','shiqi']]
 	frame_types = ['Issue-General','Issue-Specific','Narrative']
 
@@ -115,6 +122,7 @@ def main():
 		agreement = overall_agreement(combined_df.dropna(),coder_pair,frame_types)
 		full_agreement.append(agreement)
 
+	# Comparing agreement between annotators and consensus-coded annotations
 	for coder in ['ceren','david','shiqi','anoop','julia']:
 		consensus_agree_df = compare_with_consensus(coder,consensus_file,frame_types,annotation_output_path_base)
 		full_agreement.append(consensus_agree_df)

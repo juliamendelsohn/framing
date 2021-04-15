@@ -2,6 +2,11 @@ import json
 import random
 import os
 
+
+"""
+Tweets for the dev and test set were randomly shuffled and annotated at the same time 
+"""
+
 def load_examples(filename):
 	examples = []
 	with open(filename,'r') as f:
