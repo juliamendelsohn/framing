@@ -256,6 +256,10 @@ def get_candidate_set(disagreements,frame_type):
 	return cand
 
 
+#### Lots of functions to analyze where annotators disagreed the most,
+#### and what frames confused annotators. Was useful for pilot annotations, 
+#### but not in final paper.
+
 def get_mislabeled(consensus,disagreements,frame_type):
 	cand = get_candidate_set(disagreements,frame_type)
 	mislabels = defaultdict(lambda:defaultdict(int))
@@ -328,7 +332,7 @@ def load_frames():
 	frames['Issue-specific'] = ['victim/global economy','victim/humanitarian','victim/war','victim/discrimination',
 			'hero/cultural diversity','hero/integration','hero/workers',
 			'threat/jobs','threat/public order','threat/fiscal','threat/national cohesion']
-	frames['Narrative'] = ['episodic','thematic','mixed/prominent','mixed/report','mixed/personal']
+	frames['Narrative'] = ['episodic','thematic']
 	return frames
 
 

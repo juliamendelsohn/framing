@@ -112,23 +112,31 @@ def write_results(out_file,human_df,machine_df):
 
 
 def main():
-    human_annotation_path = '/home/juliame/framing/labeled_data/annotations_by_pair'
-    consensus_file = '/home/juliame/framing/labeled_data/eval_annots.jsonl'
-    eval_dir = '/shared/2/projects/framing/data/labeled_data/dataset_11-03-20'
-    predicted_frame_file = '/shared/2/projects/framing/data/full_datasheet_11-13-20.tsv'
-    machine_labels_for_agreement_file = '/home/juliame/framing/labeled_data/eval_machine_predictions.jsonl'
-    out_file = '/home/juliame/framing/labeled_data/eval_agreement_betw_humans_and_machine.tsv'
+    annot_dir = '/home/juliame/framing/labeled_data/'
+    data_dir = '/shared/2/projects/framing/data/'
+    human_annotation_path = os.path.join(annot_dir,'annotations_by_pair')
+    consensus_file = os.path.join(annot_dir,'eval_annots.jsonl')
+    eval_dir = os.path.join(data_dir,'labeled_data','dataset_11-03-20')
+    predicted_frame_file = os.path.join(data_dir,'full_datasheet_11-13-20.tsv')
+    machine_labels_for_agreement_file = os.path.join(annot_dir,'eval_machine_predictions.jsonl')
+    human_and_machine_vs_consensus_file = os.path.join(annot_dir,'eval_human_machine_agreement_with_consensus.tsv')
+    human_vs_machine_agreement_file = os.path.join(annot_dir,'eval_agreement_betw_humans_and_machine.tsv')
     frame_types = ['Issue-General','Issue-Specific','Narrative']
 
-    #eval_ids = get_eval_ids(eval_dir)
-    #get_machine_labels(predicted_frame_file,eval_ids,machine_labels_for_agreement_file)
-    # human_consensus_agreement = calculate_human_consensus_agreement(annotation_output_path_base,consensus_file,frame_types)
-    # machine_consensus_agreement = calculate_machine_consensus_agreement(machine_labels_for_agreement_file,consensus_file,frame_types)
-    # write_results(out_file,human_consensus_agreement,machine_consensus_agreement)
-    #get_human_annots(annotation_output_path_base,frame_types)
+    eval_ids = get_eval_ids(eval_dir)
+
+    # Reformat machine prediction to calculate Krippendorff Alpha w/ MASI distance
+    get_machine_labels(predicted_frame_file,eval_ids,machine_labels_for_agreement_file)
+
+    # Compare human/consensus agreement (ground truth labels) and machine/consensus agreement
+    # Not used in final analysis because human annotators and consensus are not independent
+    human_consensus_agreement = calculate_human_consensus_agreement(annotation_output_path_base,consensus_file,frame_types)
+    machine_consensus_agreement = calculate_machine_consensus_agreement(machine_labels_for_agreement_file,consensus_file,frame_types)
+    write_results(human_and_machine_vs_consensus_file,human_consensus_agreement,machine_consensus_agreement)
+
+    # Compare interannotator agreement between humans and between human/machine
     agreement_df = compare_human_agreement_with_machine(human_annotation_path,machine_labels_for_agreement_file,frame_types)
-    print(agreement_df)
-    agreement_df.to_csv(out_file,sep='\t')
+    agreement_df.to_csv(human_vs_machine_agreement_file,sep='\t')
 
 if __name__ == "__main__":
     main()
